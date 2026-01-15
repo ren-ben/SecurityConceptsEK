@@ -1,4 +1,3 @@
-# Gegenüberstellung gängiger Authentifikationssysteme
 
 ## Deployment-Anleitung
 System:
@@ -8,12 +7,12 @@ System:
     Docker Compose (Version 2.0 oder höher)
 
     Git
-Repository klonen
+`Repository klonen
 
     git clone https://github.com/ren-ben/SecurityConceptsEK.git
 
     cd SecurityConceptsEK
-Umgebungsvariablen konfigurieren
+Umgebungsvariablen` konfigurieren
 
     touch .env
 
@@ -34,7 +33,7 @@ Starte alle Services im Hintergrund:
 
     docker compose up -d
 
-
+# Gegenüberstellung gängiger Authentifikationssysteme
 ## Recherche
 
 Gegenüberstellung von Authentifikationssystemen mit folgenden Anforderungen:
@@ -59,7 +58,16 @@ Gegenüberstellung von Authentifikationssystemen mit folgenden Anforderungen:
 
 **Einsatzgebiet:** RESTful APIs, Microservices, SPAs, Mobile Apps
 
-**Anforderungserfüllung:** ✅ Service-Integration | ✅ Token-SSO | ✅ Multi-Device
+**Anforderungserfüllung:** 
+
+Anbindung an bestehende Services: ️ Nur mit Custom Logic
+JWT selbst bindet nicht an Google/AD an. Du musst das selbst bauen (z.B. User loggt sich mit AD ein, Backend erstellt JWT).
+
+Token-Authentifizierung:  Exzellent
+Das ist die Hauptfunktion von JWT. Stateless, keine Server-Side Sessions nötig.
+
+Plattform-/Device-Unabhängigkeit:  Ja
+JWTs sind einfache Strings (Base64), funktionieren überall (Web, Mobile, IoT).
 
 **Quelle:** RFC 7519 - https://datatracker.ietf.org/doc/html/rfc7519
 
@@ -81,7 +89,17 @@ Gegenüberstellung von Authentifikationssystemen mit folgenden Anforderungen:
 
 **Einsatzgebiet:** Social Login, Public APIs, Enterprise SSO
 
-**Anforderungserfüllung:** ✅ Service-Integration | ✅ Token-SSO | ✅ Multi-Device
+**Anforderungserfüllung:**
+
+Anbindung an bestehende Services:  Exzellent
+OAuth ist speziell dafür konzipiert. Nutzer können sich mit bestehenden Accounts (Google, Microsoft, GitHub) einloggen, ohne neue Credentials zu erstellen.
+
+Token-Authentifizierung:  Ja
+Nach erfolgreichem Login erhält die Anwendung einen Access Token (oft kurzlebig, 1h) und optional einen Refresh Token (langlebig), um neue Access Tokens zu holen, ohne erneuten Login.
+
+Plattform-/Device-Unabhängigkeit:  Ja
+OAuth läuft über HTTP(S) und ist damit auf Web, Mobile (iOS/Android), Desktop und IoT-Geräten einsetzbar.
+Vorteile
 
 **Quelle:** RFC 6749 - https://datatracker.ietf.org/doc/html/rfc6749
 
@@ -103,7 +121,15 @@ Gegenüberstellung von Authentifikationssystemen mit folgenden Anforderungen:
 
 **Einsatzgebiet:** Enterprise SSO, B2B-Föderationen, Bildungseinrichtungen
 
-**Anforderungserfüllung:** ✅ Service-Integration | ⚠️ Token-SSO | ❌ Multi-Device
+**Anforderungserfüllung:**
+Anbindung an bestehende Services:  Ja
+SAML ist der De-facto-Standard in Unternehmen. Active Directory Federation Services (ADFS), Okta, PingFederate sind typische Identity Provider.
+
+Token-Authentifizierung: ️ Eingeschränkt
+SAML nutzt Assertions (XML-Dokumente), die in der Session gespeichert werden. Kein Konzept von kurzlebigen Access Tokens wie bei OAuth. Für API-Calls muss man SAML mit OAuth kombinieren.
+
+Plattform-/Device-Unabhängigkeit:  Eingeschränkt
+SAML funktioniert gut in Browser-basierten Anwendungen (Web-SSO). Für Mobile Apps oder APIs ist es unhandlich, da XML-Parsing aufwendig ist und es keine nativen SDKs gibt.
 
 **Quelle:** OASIS SAML 2.0 - https://docs.oasis-open.org/security/saml/
 
@@ -125,7 +151,16 @@ Gegenüberstellung von Authentifikationssystemen mit folgenden Anforderungen:
 
 **Einsatzgebiet:** Moderne Web/Mobile Apps, Cloud-native Anwendungen
 
-**Anforderungserfüllung:** ✅ Service-Integration | ✅ Token-SSO | ✅ Multi-Device
+**Anforderungserfüllung:** 
+
+Anbindung an bestehende Services:  Exzellent
+Identisch zu OAuth 2.0. Nutzt dieselben Provider (Google, Microsoft Azure AD, Keycloak).
+
+Token-Authentifizierung:  Ja
+Kombiniert ID Token (wer ist der User?) mit Access Token (was darf er?). ID Tokens sind oft kurzlebig (5-15 Min), Access Tokens länger.
+
+Plattform-/Device-Unabhängigkeit:  Ja
+HTTP(S)-basiert, läuft überall.
 
 **Quelle:** OpenID Connect Core 1.0 - https://openid.net/specs/openid-connect-core-1_0.html
 
@@ -147,7 +182,16 @@ Gegenüberstellung von Authentifikationssystemen mit folgenden Anforderungen:
 
 **Einsatzgebiet:** Intranet, Enterprise-Software, On-Premise Anwendungen
 
-**Anforderungserfüllung:** ✅ Service-Integration | ❌ Token-SSO | ⚠️ Multi-Device
+**Anforderungserfüllung:** 
+
+Anbindung an bestehende Services:  Ja
+Fast jede Firma hat ein AD. Spring Security, Java EE, .NET können direkt dagegen authentifizieren (wie in deinem TGM-Projekt).
+
+Token-Authentifizierung:  Nein
+LDAP/AD ist Session-basiert. Nach erfolgreichem Login wird oft eine Server-Side Session (Cookie) erstellt. Für Tokens muss man LDAP mit OAuth/JWT kombinieren (z.B. AD als User-Store, aber OAuth für Token-Ausgabe via ADFS oder Azure AD).
+
+Plattform-/Device-Unabhängigkeit:  Eingeschränkt
+LDAP läuft über TCP (Port 389/636). In Web-Apps funktioniert es gut (Backend prüft Credentials), aber native Mobile Apps haben oft kein direktes LDAP-Binding. Lösung: Backend als Proxy.
 
 **Quelle:** RFC 4511, Microsoft AD Docs - https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/
 
@@ -169,31 +213,19 @@ Gegenüberstellung von Authentifikationssystemen mit folgenden Anforderungen:
 
 **Einsatzgebiet:** Public APIs, Webhooks, IoT-Geräte
 
-**Anforderungserfüllung:** ⚠️ Service-Integration | ❌ Token-SSO | ✅ Multi-Device
+**Anforderungserfüllung:**
+
+Anbindung an bestehende Services:  Nein
+API Keys sind App-spezifisch. Keine Integration mit Google/AD.
+
+Token-Authentifizierung:  Ja, aber primitiv
+Technisch ist ein API Key ein "Token", aber es gibt kein Ablaufdatum, keine Refresh-Logik, keine Claims.
+
+Plattform-/Device-Unabhängigkeit:  Ja
+Einfacher String, funktioniert überall.
 
 **Quelle:** Google API Key Best Practices - https://cloud.google.com/docs/authentication/api-keys
 
----
-
-## 7. Session-based (Cookies)
-
-**Zusammenfassung:** Traditionelle Methode mit serverseitiger Session-Speicherung und Cookie-basierter Session-ID.
-
-**Vorteile:**
-- Einfach zu verstehen und implementieren
-- Serverseitige Kontrolle über Sessions
-- Framework-Support überall verfügbar
-
-**Nachteile:**
-- Nicht skalierbar (Sticky Sessions)
-- CSRF-anfällig, nicht für APIs geeignet
-- Nicht stateless
-
-**Einsatzgebiet:** Monolithische Web-Apps, SSR-Anwendungen
-
-**Anforderungserfüllung:** ❌ Service-Integration | ❌ Token-SSO | ⚠️ Multi-Device
-
-**Quelle:** OWASP Session Management - https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html
 
 
 ## Deployment-Konfiguration: LDAP und OAuth2 Integration
@@ -249,7 +281,7 @@ Google OAuth2 einrichten:
 
         Application type: Web application
 
-        Authorized redirect URIs: http://localhost:8080/login/oauth2/code/google
+        Authorized redirect URIs: http://localhost/login/oauth2/code/google
 
     Notiere Client ID und Client Secret
 
@@ -264,9 +296,9 @@ GitHub OAuth2 einrichten:
 
         Application name: SecurityConceptsEK
 
-        Homepage URL: http://localhost:8080
+        Homepage URL: http://localhost
 
-        Authorization callback URL: http://localhost:8080/login/oauth2/code/github
+        Authorization callback URL: http://localhost/login/oauth2/code/github
 
     Notiere Client ID und Client Secret
 
