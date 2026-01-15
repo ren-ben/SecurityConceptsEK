@@ -1,5 +1,6 @@
 package com.oliwier.securityconceptsek.config;
 
+import com.oliwier.securityconceptsek.security.AdAuthoritiesMapper;
 import com.oliwier.securityconceptsek.security.CustomOAuth2UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -27,9 +28,12 @@ public class SecurityConfig {
     private String adUrl;
 
     private final CustomOAuth2UserService customOAuth2UserService;
+    private final AdAuthoritiesMapper adAuthoritiesMapper;
 
-    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService) {
+
+    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService, AdAuthoritiesMapper adAuthoritiesMapper) {
         this.customOAuth2UserService = customOAuth2UserService;
+        this.adAuthoritiesMapper = adAuthoritiesMapper;
     }
 
     @Bean
@@ -44,6 +48,9 @@ public class SecurityConfig {
 
         provider.setConvertSubErrorCodesToExceptions(true);
         provider.setUseAuthenticationRequestCredentials(true);
+
+        provider.setAuthoritiesMapper(adAuthoritiesMapper);
+
         return provider;
     }
 

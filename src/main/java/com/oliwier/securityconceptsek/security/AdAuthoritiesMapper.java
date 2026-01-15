@@ -16,20 +16,21 @@ public class AdAuthoritiesMapper implements GrantedAuthoritiesMapper {
     public Collection<? extends GrantedAuthority> mapAuthorities(Collection<? extends GrantedAuthority> authorities) {
         Set<GrantedAuthority> mapped = new HashSet<>();
 
+        mapped.add(new SimpleGrantedAuthority("ROLE_USER"));
+
         for (GrantedAuthority authority : authorities) {
-            String group = authority.getAuthority().toUpperCase();
+            String raw = authority.getAuthority();
+            String group = raw.toUpperCase();
 
             mapped.add(authority);
 
-            if (group.contains("WINDPARK_OPS") || group.contains("IT_OPS")) {
+            if (group.contains("SCHUELER5BHIT")) {
                 mapped.add(new SimpleGrantedAuthority("ROLE_OPS"));
             }
 
-            if (group.contains("WINDPARK_ADMIN") || group.contains("IT_ADMIN")) {
+            if (group.contains("LEHRER")) {
                 mapped.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
             }
-
-            mapped.add(new SimpleGrantedAuthority("ROLE_USER"));
         }
 
         return mapped;

@@ -13,7 +13,7 @@ import java.util.Map;
 public class SecretController {
 
     @GetMapping("/students")
-    @PreAuthorize("hasRole('SCHUELER5BHIT') or hasAuthority('schueler5BHIT')")
+    @PreAuthorize("hasRole('OPS')")
     public Map<String, String> getStudentSecret(Authentication auth) {
         return Map.of(
                 "message", "Glückwunsch! Du bist in der 5BHIT und hast Zugriff.",
@@ -22,7 +22,7 @@ public class SecretController {
     }
 
     @GetMapping("/teachers")
-    @PreAuthorize("hasAuthority('lehrer')")
+    @PreAuthorize("hasRole('ADMIN')")
     public Map<String, String> getTeacherSecret() {
         return Map.of("message", "Nur für Lehrer sichtbar!");
     }

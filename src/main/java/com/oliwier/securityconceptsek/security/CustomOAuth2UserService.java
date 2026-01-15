@@ -28,11 +28,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         if (email != null) {
             authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
 
-            if (email.endsWith("@tgm.ac.at") || email.equals("your-test-email@gmail.com")) {
-                authorities.add(new SimpleGrantedAuthority("ROLE_OPS"));
-            }
-
-            if (email.equals("admin@tgm.ac.at")) {
+            if (email.endsWith("@student.tgm.ac.at")) {
                 authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
             }
         }
