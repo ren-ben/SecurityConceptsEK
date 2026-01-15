@@ -47,12 +47,14 @@ public class ApiController {
     }
 
     @GetMapping("/user/data")
-    public Map<String, Object> getUserData() {
+    public Map<String, Object> getUserData(Authentication auth) {
         return Map.of(
+                "username", auth.getName(),
                 "data", "This data is visible to all authenticated users",
                 "section", "user"
         );
     }
+
 
     @GetMapping("/ops/data")
     public Map<String, Object> getOpsData() {
