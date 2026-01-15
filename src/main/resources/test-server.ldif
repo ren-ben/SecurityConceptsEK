@@ -1,0 +1,41 @@
+dn: ou=groups,dc=springframework,dc=org
+objectclass: top
+objectclass: organizationalUnit
+ou: groups
+
+dn: ou=people,dc=springframework,dc=org
+objectclass: top
+objectclass: organizationalUnit
+ou: people
+
+dn: uid=testuser,ou=people,dc=springframework,dc=org
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectclass: inetOrgPerson
+cn: Test User
+sn: User
+uid: testuser
+userPassword: password
+
+dn: uid=opsuser,ou=people,dc=springframework,dc=org
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectclass: inetOrgPerson
+cn: Ops User
+sn: Operator
+uid: opsuser
+userPassword: password
+
+dn: cn=developers,ou=groups,dc=springframework,dc=org
+objectclass: top
+objectclass: groupOfNames
+cn: developers
+member: uid=testuser,ou=people,dc=springframework,dc=org
+
+dn: cn=ops,ou=groups,dc=springframework,dc=org
+objectclass: top
+objectclass: groupOfNames
+cn: ops
+member: uid=opsuser,ou=people,dc=springframework,dc=org
