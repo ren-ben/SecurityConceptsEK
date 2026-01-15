@@ -158,6 +158,72 @@
               <p>General information</p>
             </RouterLink>
           </div>
+
+          <!-- Fügen das irgendwo im Dashboard-Bereich ein, wo Platz ist -->
+          <div class="test-zone-card">
+            <div class="card-header">
+              <h3>Security Role Test</h3>
+              <p>Test access to AD-protected endpoints</p>
+            </div>
+
+            <div class="test-actions">
+              <!-- Button für Schüler (5BHIT) -->
+              <div class="test-item">
+                <div class="test-info">
+                  <strong>Student Secret Area</strong>
+                  <span class="endpoint-badge">GET /api/secret/students</span>
+                </div>
+                
+                <button 
+                  @click="testSecretAccess('students')" 
+                  class="test-btn"
+                  :class="{ 'loading': loadingTest === 'students' }"
+                  :disabled="!!loadingTest"
+                >
+                  {{ loadingTest === 'students' ? 'Checking...' : 'Test Access' }}
+                </button>
+              </div>
+
+              <!-- Optional: Button für Lehrer -->
+              <div class="test-item">
+                <div class="test-info">
+                  <strong>Teacher Secret Area</strong>
+                  <span class="endpoint-badge">GET /api/secret/teachers</span>
+                </div>
+                
+                <button 
+                  @click="testSecretAccess('teachers')" 
+                  class="test-btn"
+                  :class="{ 'loading': loadingTest === 'teachers' }"
+                  :disabled="!!loadingTest"
+                >
+                  {{ loadingTest === 'teachers' ? 'Checking...' : 'Test Access' }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Result Display -->
+            <div v-if="testResult" :class="['result-box', testResult.type]">
+              <div class="result-icon">
+                <svg v-if="testResult.type === 'success'" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke-width="2"/>
+                  <polyline points="22 4 12 14.01 9 11.01" stroke-width="2"/>
+                </svg>
+                <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <circle cx="12" cy="12" r="10" stroke-width="2"/>
+                  <line x1="12" y1="8" x2="12" y2="12" stroke-width="2"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16" stroke-width="2"/>
+                </svg>
+              </div>
+              <div class="result-content">
+                <strong>{{ testResult.title }}</strong>
+                <p>{{ testResult.message }}</p>
+                <pre v-if="testResult.data" class="mini-json">{{ testResult.data }}</pre>
+              </div>
+              <button class="close-btn" @click="testResult = null">×</button>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -167,6 +233,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import api from '@/utils/api'
 
 const authStore = useAuthStore()
 const authMode = ref<'ad' | 'social'>('ad')
@@ -180,6 +247,54 @@ const handleAdLogin = async () => {
     // Error is handled in store and displayed in template
   }
 }
+
+// State für den Test
+const loadingTest = ref<string | null>(null)
+const testResult = ref<{ type: 'success' | 'error', title: string, message: string, data?: any } | null>(null)
+
+const testSecretAccess = async (endpoint: 'students' | 'teachers') => {
+  loadingTest.value = endpoint
+  testResult.value = null
+  
+  try {
+    // API Call zum Backend
+    const response = await api.get(`/api/secret/${endpoint}`)
+    
+    // Wenn wir hier ankommen, war es Status 200 OK
+    testResult.value = {
+      type: 'success',
+      title: 'Access Granted! 🎉',
+      message: `You successfully accessed the protected ${endpoint} area.`,
+      data: response.data
+    }
+  } catch (err: any) {
+    // Fehlerhandling (403, 401, etc.)
+    const status = err.response?.status
+    
+    if (status === 403) {
+      testResult.value = {
+        type: 'error',
+        title: 'Access Denied (403)',
+        message: `You are missing the required AD group/role for this endpoint. (Are you in 'schueler5BHIT'?)`
+      }
+    } else if (status === 401) {
+      testResult.value = {
+        type: 'error',
+        title: 'Unauthorized (401)',
+        message: 'You are not logged in.'
+      }
+    } else {
+      testResult.value = {
+        type: 'error',
+        title: 'Error',
+        message: err.message || 'Unknown error occurred'
+      }
+    }
+  } finally {
+    loadingTest.value = null
+  }
+}
+
 </script>
 
 <style scoped>
@@ -547,4 +662,147 @@ const handleAdLogin = async () => {
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
+
+/* --- Nord Theme Adaptation for Test Zone --- */
+
+.test-zone-card {
+  background: var(--nord1); /* Dunkler Hintergrund wie die anderen Cards */
+  border: 1px solid var(--nord2);
+  border-radius: 8px;
+  padding: 2rem;
+  margin-top: 2rem;
+  /* Optional: Glow Effekt wie bei den anderen Cards */
+  transition: border-color 0.2s;
+}
+
+.test-zone-card:hover {
+  border-color: var(--nord8); /* Frost Blue Hover */
+}
+
+.test-zone-card h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--nord6); /* Snow White Text */
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.test-zone-card p {
+    color: var(--nord4);
+    font-size: 0.9rem;
+}
+
+.test-actions {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.test-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: var(--nord0); /* Noch dunklerer Hintergrund für Items */
+  border-radius: 6px;
+  border: 1px solid var(--nord2);
+}
+
+.test-info strong {
+  display: block;
+  color: var(--nord6);
+  font-size: 0.95rem;
+  margin-bottom: 0.25rem;
+}
+
+.endpoint-badge {
+  font-family: 'Fira Code', monospace; /* Oder deine Monospace Font */
+  font-size: 0.8rem;
+  color: var(--nord8); /* Frost Blue */
+  background: rgba(136, 192, 208, 0.1);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+.test-btn {
+  background: var(--nord10); /* Aurora Blue */
+  color: var(--nord6);
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.test-btn:hover:not(:disabled) {
+  background: var(--nord9);
+  transform: translateY(-1px);
+}
+
+.test-btn:disabled {
+  background: var(--nord3);
+  color: var(--nord4);
+  cursor: not-allowed;
+}
+
+/* Result Box Styles - Nord Theme */
+.result-box {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border-radius: 6px;
+  display: flex;
+  gap: 1rem;
+  position: relative;
+  animation: fadeIn 0.3s ease;
+}
+
+.result-box.success {
+  background: rgba(163, 190, 140, 0.15); /* Aurora Green Background */
+  border: 1px solid var(--nord14);
+  color: var(--nord14); /* Aurora Green Text */
+}
+
+.result-box.error {
+  background: rgba(191, 97, 106, 0.15); /* Aurora Red Background */
+  border: 1px solid var(--nord11);
+  color: var(--nord11); /* Aurora Red Text */
+}
+
+.result-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.mini-json {
+  background: var(--nord0);
+  color: var(--nord4);
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  font-family: monospace;
+  border: 1px solid var(--nord2);
+}
+
+.close-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  color: currentColor;
+  font-size: 1.2rem;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.close-btn:hover {
+  opacity: 1;
+}
+
 </style>
