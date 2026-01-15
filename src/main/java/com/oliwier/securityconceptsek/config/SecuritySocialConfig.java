@@ -39,7 +39,7 @@ public class SecuritySocialConfig {
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(customOAuth2UserService)
                         )
-                        .defaultSuccessUrl("http://localhost:5173/", true)
+                        .defaultSuccessUrl("http://localhost/", true)
                 )
                 .logout(logout -> logout
                         .logoutUrl("/api/logout")
