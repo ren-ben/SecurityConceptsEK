@@ -63,8 +63,10 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/login/**", "/oauth2/**", "/error", "/css/**", "/js/**", "/images/**").permitAll()
+                        .requestMatchers("/api/public/**").permitAll()
                         .anyRequest().authenticated()
                 )
+
 
                 .formLogin(form -> form
                         .loginProcessingUrl("/api/login")
